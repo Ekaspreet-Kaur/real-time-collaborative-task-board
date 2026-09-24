@@ -1,70 +1,202 @@
 # Real-Time Collaborative Task Board
 
-A basic full-stack collaborative task board built with:
+A full-stack task management application where users can create boards, manage tasks, assign tasks to other board members, and see changes in real time.
 
-- React + Vite
-- Node.js + Express
-- MongoDB + Mongoose
-- Socket.IO
-- JWT authentication
-- bcrypt password hashing
-- HTML5 drag and drop
+I built this project to practice working with authentication, REST APIs, MongoDB, React state management, drag and drop, and real-time communication using Socket.IO.
+
+## Tech Stack
+
+**Frontend**
+
+* React
+* Vite
+* Axios
+* Socket.IO Client
+* HTML5 Drag and Drop API
+* CSS
+
+**Backend**
+
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* JWT
+* bcryptjs
+* Socket.IO
+
+---
 
 ## Features
 
-- Register / login / logout
-- JWT authentication
-- Board creation, viewing, renaming and deletion
-- Board membership / authorization
-- Default Todo, In Progress and Done columns
-- Task CRUD
-- Task assignment to board members
-- Drag and drop task movement
-- Real-time task updates using Socket.IO rooms
-- Activity log
-- Basic last-write-wins concurrency strategy
-- Meaningful Git commit suggestions
-- API documentation
+### Authentication
 
-## Project structure
+* User registration
+* User login
+* JWT-based authentication
+* Password hashing with bcrypt
+* Client-side logout
+
+### Boards
+
+* Create a board
+* View boards available to the logged-in user
+* Open a board
+* Rename a board
+* Delete a board
+* Add existing users as board members while creating a board
+* Board owner permissions for rename and delete
+
+### Tasks
+
+* Create tasks
+* Edit tasks
+* Delete tasks
+* Add a description
+* Assign tasks to board members
+* Move tasks between columns using drag and drop
+
+The board has three default task statuses:
+
+```text
+Todo
+In Progress
+Done
+```
+
+### Real-Time Updates
+
+Socket.IO is used to update users who are currently viewing the same board.
+
+The application sends events for:
+
+```text
+task:created
+task:updated
+task:deleted
+activity:created
+board:updated
+board:deleted
+```
+
+A connection status is also shown in the board UI.
+
+### Activity Log
+
+The application records activities such as:
+
+* Task created
+* Task updated
+* Task moved
+* Task assigned
+* Task completed
+* Task deleted
+
+The latest 30 activities are displayed on the board.
+
+---
+
+# How the Application Works
+
+The application has two separate parts:
+
+```text
+React + Vite
+     |
+     | HTTP / REST API
+     ↓
+Node.js + Express
+     |
+     ↓
+MongoDB
+
+
+React + Socket.IO Client
+     |
+     | WebSocket connection
+     ↓
+Socket.IO Server
+     |
+     ↓
+Board room
+```
+
+The REST API is responsible for authentication, database operations, and authorization.
+
+Socket.IO is used when changes need to be reflected on other clients without refreshing the page.
+
+---
+
+# Project Structure
 
 ```text
 real-time-collaborative-task-board/
+│
 ├── client/
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── Auth.jsx
+│   │   │   ├── Board.jsx
+│   │   │   ├── Boards.jsx
+│   │   │   └── TaskCard.jsx
 │   │   ├── App.jsx
 │   │   ├── api.js
 │   │   ├── main.jsx
 │   │   └── styles.css
 │   ├── .env.example
 │   └── package.json
+│
 ├── server/
 │   ├── middleware/
+│   │   ├── auth.js
+│   │   └── error.js
 │   ├── models/
+│   │   ├── User.js
+│   │   ├── Board.js
+│   │   ├── Task.js
+│   │   └── Activity.js
 │   ├── routes/
+│   │   ├── auth.js
+│   │   ├── boards.js
+│   │   ├── tasks.js
+│   │   └── activity.js
 │   ├── server.js
 │   ├── socket.js
 │   ├── .env.example
 │   └── package.json
+│
 └── README.md
 ```
 
-## Requirements
+---
 
-- Node.js 18+
-- MongoDB running locally or a MongoDB Atlas connection
+# Requirements
 
-## Setup
+You need:
 
-### 1. Backend
+* Node.js 18+
+* MongoDB running locally or a MongoDB Atlas database
+* npm
+
+---
+
+# Setup
+
+## 1. Clone the repository
+
+```bash
+git clone <your-repository-url>
+cd real-time-collaborative-task-board
+```
+
+## 2. Start the Backend
 
 ```bash
 cd server
 npm install
 ```
 
-Copy `.env.example` to `.env` and configure:
+Create a `.env` file from `.env.example`.
 
 ```env
 PORT=5000
@@ -73,13 +205,27 @@ JWT_SECRET=change_this_secret
 CLIENT_URL=http://localhost:5173
 ```
 
-Start:
+Start the backend:
 
 ```bash
 npm run dev
 ```
 
-### 2. Frontend
+The server should start on:
+
+```text
+http://localhost:5000
+```
+
+There is also a simple health endpoint:
+
+```text
+GET /api/health
+```
+
+---
+
+## 3. Start the Frontend
 
 Open another terminal:
 
@@ -88,26 +234,272 @@ cd client
 npm install
 ```
 
-Copy `.env.example` to `.env`:
+Create a `.env` file:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
 ```
 
-Start:
+Start Vite:
 
 ```bash
 npm run dev
 ```
 
-Open the URL shown by Vite.
+Open the URL shown in the terminal, normally:
 
-## API documentation
+```text
+http://localhost:5173
+```
 
-### Authentication
+---
 
-`POST /api/auth/register`
+# Authentication
+
+When a user registers, the password is not stored directly.
+
+The password is hashed using `bcryptjs`:
+
+```text
+Password
+   ↓
+bcrypt hash
+   ↓
+MongoDB
+```
+
+After successful registration or login, the server creates a JWT.
+
+The frontend stores the token in `localStorage` and Axios automatically adds it to protected API requests:
+
+```text
+Authorization: Bearer <JWT>
+```
+
+The backend verifies the token through authentication middleware before allowing access to protected routes.
+
+---
+
+# Authorization
+
+Authentication and authorization are handled separately.
+
+Authentication answers:
+
+> Who is the user?
+
+Authorization answers:
+
+> Is this user allowed to access this board/task?
+
+For board requests, the backend checks whether the logged-in user's ID exists in the board's `members` array.
+
+For example:
+
+```js
+Board.findOne({
+  _id: boardId,
+  members: userId
+});
+```
+
+This prevents a logged-in user from accessing a board just by changing the board ID in the URL/request.
+
+Board owners have additional permissions:
+
+* Rename board
+* Delete board
+
+Tasks also check board membership before they can be updated or deleted.
+
+---
+
+# MongoDB Models
+
+The project uses four main MongoDB models.
+
+### User
+
+Stores:
+
+```text
+name
+email
+passwordHash
+createdAt
+updatedAt
+```
+
+### Board
+
+Stores:
+
+```text
+name
+owner
+members
+createdAt
+updatedAt
+```
+
+### Task
+
+Stores:
+
+```text
+board
+title
+description
+status
+assignee
+createdBy
+createdAt
+updatedAt
+```
+
+### Activity
+
+Stores:
+
+```text
+board
+user
+task
+action
+message
+createdAt
+updatedAt
+```
+
+---
+
+# Task Drag and Drop
+
+The task cards use the browser's native HTML5 drag-and-drop API.
+
+When dragging starts, the task ID is stored in `dataTransfer`:
+
+```js
+e.dataTransfer.setData("taskId", task._id);
+```
+
+When the task is dropped onto another column, the frontend sends the new status to the backend.
+
+For example:
+
+```text
+Todo
+  ↓
+In Progress
+```
+
+results in an API update similar to:
+
+```json
+{
+  "status": "in-progress"
+}
+```
+
+The database is then updated and the change is broadcast to the board's Socket.IO room.
+
+---
+
+# Real-Time Updates
+
+When a user opens a board, the frontend creates a Socket.IO connection.
+
+It then sends:
+
+```text
+board:join
+```
+
+with the board ID.
+
+The server uses the board ID as the Socket.IO room:
+
+```js
+socket.join(boardId);
+```
+
+When a database operation succeeds, the backend emits an event to that room.
+
+For example, after creating a task:
+
+```js
+io.to(boardId).emit("task:created", task);
+```
+
+Other clients listening for the event update their React state without needing to reload the page.
+
+The main event flow is:
+
+```text
+User A
+   |
+   | creates/updates task
+   ↓
+Express API
+   |
+   | save to MongoDB
+   ↓
+MongoDB
+   |
+   | successful update
+   ↓
+Socket.IO
+   |
+   ↓
+Board room
+   |
+   ├── User B
+   └── User C
+```
+
+---
+
+# Concurrency
+
+This project currently uses a simple last-write-wins approach.
+
+There is no version number or conflict detection on tasks.
+
+If two users edit the same task around the same time, both requests can reach the backend and the update processed later becomes the current database value.
+
+For a future version, I would add optimistic concurrency using a version field.
+
+For example:
+
+```text
+Client version: 4
+        ↓
+Server checks database version
+        ↓
+       4 ?
+      /   \
+    yes    no
+     ↓      ↓
+ update   409 Conflict
+ to 5
+```
+
+This would allow the application to detect when a user is editing an outdated version of a task.
+
+---
+
+# API Endpoints
+
+## Authentication
+
+### Register
+
+```http
+POST /api/auth/register
+```
+
+Example:
 
 ```json
 {
@@ -117,7 +509,13 @@ Open the URL shown by Vite.
 }
 ```
 
-`POST /api/auth/login`
+### Login
+
+```http
+POST /api/auth/login
+```
+
+Example:
 
 ```json
 {
@@ -126,128 +524,150 @@ Open the URL shown by Vite.
 }
 ```
 
-### Boards
+---
 
-All board endpoints require:
+## Boards
 
-```text
-Authorization: Bearer <JWT>
+All board routes require a valid JWT.
+
+```http
+POST   /api/boards
+GET    /api/boards
+GET    /api/boards/:id
+PATCH  /api/boards/:id
+DELETE /api/boards/:id
 ```
 
-- `POST /api/boards`
-- `GET /api/boards`
-- `GET /api/boards/:id`
-- `PATCH /api/boards/:id`
-- `DELETE /api/boards/:id`
+Creating a board can also include member emails:
 
-### Tasks
-
-- `POST /api/boards/:id/tasks`
-- `GET /api/boards/:id/tasks`
-- `PATCH /api/tasks/:id`
-- `DELETE /api/tasks/:id`
-
-### Activity
-
-- `GET /api/boards/:id/activity`
-
-## Real-time implementation
-
-When a user opens a board, the client connects to Socket.IO and joins a room named after the board ID.
-
-Example:
-
-```text
-socket.join(boardId)
+```json
+{
+  "name": "Project Board",
+  "memberEmails": [
+    "user1@example.com",
+    "user2@example.com"
+  ]
+}
 ```
 
-After a database-changing task operation succeeds, the server emits an event to that board room:
+Only users who already exist in the database are added as members.
 
-```text
-task:created
-task:updated
-task:deleted
+---
+
+## Tasks
+
+```http
+POST   /api/boards/:id/tasks
+GET    /api/boards/:id/tasks
+PATCH  /api/tasks/:id
+DELETE /api/tasks/:id
 ```
 
-Other users connected to the same board receive the event and update their local React state without refreshing.
+---
 
-## Concurrency handling
+## Activity
 
-This basic implementation uses a last-write-wins strategy.
-
-When two users edit the same task at approximately the same time, the update that reaches the server last becomes the persisted version. `updatedAt` is automatically changed by MongoDB/Mongoose on successful updates.
-
-This is intentionally simple because conflict resolution is a documented requirement, not a requirement for a sophisticated collaborative editing engine.
-
-A future implementation could add optimistic concurrency using a `version` field:
-
-```text
-client version 4
-       ↓
-server checks database version
-       ↓
-if version matches → update to version 5
-if version differs → 409 Conflict
+```http
+GET /api/boards/:id/activity
 ```
 
-## Error handling
+The endpoint returns the latest 30 activities for the board.
 
-The backend handles:
+---
 
-- Invalid authentication
-- Missing/invalid JWT
-- Unauthorized board access
-- Invalid MongoDB IDs
-- Missing fields
-- Database errors
-- Not-found resources
+# Error Handling
 
-Socket disconnection is handled on the client with a visible connection status.
+The backend has a common error-handling middleware and checks for common invalid requests.
 
-## Known limitations
+Examples include:
 
-- Last-write-wins concurrency
-- No invitation system
-- No roles
-- No task reordering within the same column
-- No offline synchronization queue
-- No automated tests
-- No Docker setup
-- Board members are added through the board creation/member email field in this basic implementation
+* Missing authentication token
+* Invalid or expired JWT
+* Invalid MongoDB ID
+* Board access denied
+* Task access denied
+* Missing board name
+* Missing task title
+* Invalid task status
+* Invalid task assignee
+* MongoDB/database errors
+* Resource not found
 
-## Submission readiness
+---
 
-This project satisfies the core collaborative task board requirements for:
+# Current Limitations
 
-- authentication and board access controls
-- board CRUD
-- task CRUD and assignment
-- default Todo / In Progress / Done workflow
-- drag-and-drop task movement
-- real-time updates using Socket.IO
-- activity logging
-- basic concurrency documentation
+This is intentionally a basic implementation, so there are several things that can still be improved.
 
-The main gaps for a full submission are:
+* Socket.IO connections are not currently authenticated separately from the REST API.
+* Socket room membership is not checked against board membership.
+* No invitation/acceptance workflow for adding members.
+* No different roles such as admin/member.
+* No task ordering within the same column.
+* No offline synchronization.
+* No optimistic concurrency/version checking.
+* No automated tests.
+* No Docker configuration.
+* No production deployment configuration.
+* JWT is stored in `localStorage`, rather than using a more secure HTTP-only cookie approach.
 
-- no live deployment URL
-- no Docker configuration
-- no automated tests
-- no advanced optimistic concurrency or conflict resolution beyond the documented last-write-wins strategy
+---
 
-## Suggested Git history
+# What I Learned From This Project
 
-Use meaningful commits while building:
+The main things I practiced while building this project were:
+
+* Building REST APIs with Express
+* Connecting Express to MongoDB using Mongoose
+* Creating and using Mongoose models
+* JWT authentication
+* Password hashing with bcrypt
+* Express middleware
+* Backend authorization
+* React state management
+* Axios API calls
+* HTML5 drag and drop
+* Socket.IO rooms
+* Real-time client updates
+* Activity logging
+* Handling API errors
+* Managing frontend/backend environment variables
+
+The most important part for me was understanding how the different pieces connect:
 
 ```text
-feat: initialize react and express applications
-feat: add user authentication
-feat: add board CRUD and authorization
-feat: add task CRUD
-feat: add drag and drop
-feat: add socket.io board rooms
-feat: add realtime task updates
-feat: add activity log
-docs: add architecture and api documentation
-fix: handle invalid task ids
+React
+  ↓
+Axios
+  ↓
+Express API
+  ↓
+Authentication / Authorization
+  ↓
+Mongoose
+  ↓
+MongoDB
+
+React
+  ↕
+Socket.IO
+  ↕
+Node.js
 ```
+
+---
+
+# Possible Improvements
+
+If I continue this project, I would work on:
+
+1. Socket authentication and board-level authorization
+2. Optimistic concurrency using a version field
+3. Proper member invitation flow
+4. Board roles and permissions
+5. Task ordering
+6. Automated tests
+7. Docker setup
+8. Deployment
+9. Better validation on both frontend and backend
+10. More detailed activity history
