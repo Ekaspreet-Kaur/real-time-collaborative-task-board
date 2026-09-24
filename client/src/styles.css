@@ -379,14 +379,18 @@ textarea {
 .modal-backdrop {
   position: fixed;
   inset: 0;
+  z-index: 20;
   background: rgba(15, 23, 42, 0.55);
   display: grid;
   place-items: center;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .modal {
   width: min(500px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   background: rgba(255, 255, 255, 0.98);
   border-radius: 18px;
   padding: 24px;
