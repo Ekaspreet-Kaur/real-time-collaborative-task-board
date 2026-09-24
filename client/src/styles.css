@@ -1,0 +1,276 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: #f4f6f8;
+  color: #18202a;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 15px;
+  cursor: pointer;
+  background: #2563eb;
+  color: white;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button.secondary,
+.secondary {
+  background: #e5e7eb;
+  color: #18202a;
+}
+
+button.danger {
+  color: #b91c1c;
+}
+
+button.small {
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+.link-button {
+  background: transparent;
+  color: #2563eb;
+  padding: 4px 0;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.auth-card {
+  width: min(400px, 92vw);
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px #0001;
+  display: grid;
+  gap: 12px;
+}
+
+.auth-card h1 {
+  margin-bottom: 0;
+}
+
+input, textarea, select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 11px;
+  background: white;
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.error-banner {
+  margin: 16px auto;
+  max-width: 1400px;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.error-banner button {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.topbar, .board-header {
+  padding: 20px 5%;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.topbar h1, .board-header h1 {
+  margin: 5px 0;
+}
+
+.dashboard-content {
+  width: min(1200px, 90%);
+  margin: 30px auto;
+}
+
+.create-board {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 25px;
+  display: grid;
+  gap: 10px;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.board-card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px #0000000a;
+}
+
+.card-actions, .header-actions, .modal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.board-page {
+  min-height: 100vh;
+}
+
+.columns {
+  width: min(1400px, 94%);
+  margin: 25px auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.column {
+  min-height: 450px;
+  background: #e9edf2;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.column-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.column-title h2 {
+  font-size: 17px;
+}
+
+.column-title span {
+  background: white;
+  border-radius: 99px;
+  padding: 4px 9px;
+  font-size: 12px;
+}
+
+.task-card {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin: 10px 0;
+  cursor: grab;
+  box-shadow: 0 2px 8px #00000010;
+}
+
+.task-card:active {
+  cursor: grabbing;
+}
+
+.task-card-title {
+  font-weight: 700;
+}
+
+.task-card p {
+  color: #59636e;
+  font-size: 14px;
+}
+
+.task-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.activity {
+  width: min(1400px, 94%);
+  margin: 25px auto;
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.activity-item {
+  display: grid;
+  grid-template-columns: 150px 1fr auto;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.activity-item small {
+  color: #6b7280;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #0007;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.modal {
+  width: min(500px, 100%);
+  background: white;
+  border-radius: 15px;
+  padding: 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.loading {
+  padding: 50px;
+  text-align: center;
+}
+
+@media (max-width: 800px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar, .board-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .activity-item {
+    grid-template-columns: 1fr;
+  }
+}
