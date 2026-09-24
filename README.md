@@ -215,6 +215,26 @@ Socket disconnection is handled on the client with a visible connection status.
 - No Docker setup
 - Board members are added through the board creation/member email field in this basic implementation
 
+## Submission readiness
+
+This project satisfies the core collaborative task board requirements for:
+
+- authentication and board access controls
+- board CRUD
+- task CRUD and assignment
+- default Todo / In Progress / Done workflow
+- drag-and-drop task movement
+- real-time updates using Socket.IO
+- activity logging
+- basic concurrency documentation
+
+The main gaps for a full submission are:
+
+- no live deployment URL
+- no Docker configuration
+- no automated tests
+- no advanced optimistic concurrency or conflict resolution beyond the documented last-write-wins strategy
+
 ## Suggested Git history
 
 Use meaningful commits while building:
