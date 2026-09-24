@@ -111,6 +111,55 @@ router.patch("/:id", async (req, res, next) => {
   }
 });
 
+router.patch("/:id/members", async (req, res, next) => {
+  try {
+    const board = await getAuthorizedBoard(req.params.id, req.user.id);
+    if (!board) return res.status(403).json({ message: "You cannot access this board" });
+
+    if (board.owner.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Only the owner can add members to this board" });
+    }
+
+    const memberEmails = Array.isArray(req.body.memberEmails)
+      ? req.body.memberEmails
+      : [req.body.memberEmails].filter(Boolean);
+
+    if (!memberEmails.length) {
+      return res.status(400).json({ message: "At least one email is required" });
+    }
+
+    const existingMemberIds = new Set(board.members.map((member) => member.toString()));
+    const newMembers = [];
+
+    for (const email of memberEmails) {
+      const normalizedEmail = String(email).trim().toLowerCase();
+      if (!normalizedEmail) continue;
+
+      const user = await User.findOne({ email: normalizedEmail });
+      if (!user) continue;
+
+      if (!existingMemberIds.has(user._id.toString())) {
+        newMembers.push(user._id);
+        existingMemberIds.add(user._id.toString());
+      }
+    }
+
+    if (!newMembers.length) {
+      return res.status(400).json({ message: "No new valid members were found" });
+    }
+
+    board.members = [...board.members, ...newMembers];
+    await board.save();
+
+    const populatedBoard = await Board.findById(board._id).populate("members", "name email");
+    req.app.get("io").to(board._id.toString()).emit("board:updated", populatedBoard);
+
+    res.json(populatedBoard);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.delete("/:id", async (req, res, next) => {
   try {
     const board = await getAuthorizedBoard(req.params.id, req.user.id);

@@ -16,6 +16,7 @@ export default function Board({ boardId, onBack }) {
   const [error, setError] = useState("");
   const [socketStatus, setSocketStatus] = useState("connecting");
   const [taskForm, setTaskForm] = useState(null);
+  const [memberInput, setMemberInput] = useState("");
 
   const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 
@@ -122,6 +123,30 @@ export default function Board({ boardId, onBack }) {
     }
   }
 
+  async function addMembersToBoard(e) {
+    e.preventDefault();
+    if (!memberInput.trim()) return;
+
+    const emails = memberInput
+      .split(",")
+      .map((email) => email.trim())
+      .filter(Boolean);
+
+    if (!emails.length) {
+      setError("Enter at least one valid email");
+      return;
+    }
+
+    try {
+      const { data } = await api.patch(`/boards/${boardId}/members`, { memberEmails: emails });
+      setBoard((prev) => ({ ...prev, members: data.members }));
+      setMemberInput("");
+      setError("");
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not add members");
+    }
+  }
+
   const grouped = useMemo(() => {
     return Object.fromEntries(
       columns.map((column) => [
@@ -152,6 +177,23 @@ export default function Board({ boardId, onBack }) {
           <button className="secondary" onClick={renameBoard}>Rename</button>
         </div>
       </header>
+
+      <div className="board-toolbar">
+        <div className="member-summary">
+          {board.members.slice(0, 4).map((member) => (
+            <span className="member-badge" key={member._id}>{member.name}</span>
+          ))}
+        </div>
+
+        <form className="member-form" onSubmit={addMembersToBoard}>
+          <input
+            value={memberInput}
+            onChange={(e) => setMemberInput(e.target.value)}
+            placeholder="Add members by email"
+          />
+          <button type="submit" className="secondary">Add</button>
+        </form>
+      </div>
 
       {error && (
         <div className="error-banner">

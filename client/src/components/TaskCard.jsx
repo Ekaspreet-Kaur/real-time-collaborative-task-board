@@ -14,7 +14,7 @@ export default function TaskCard({ task, onEdit, onDelete }) {
       {task.description && <p>{task.description}</p>}
 
       <div className="task-meta">
-        <span>{task.assignee?.name || "Unassigned"}</span>
+        <span className="task-assignee">{task.assignee?.name || "Unassigned"}</span>
         <button
           className="small danger"
           onClick={(e) => {
